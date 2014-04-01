@@ -1,60 +1,51 @@
-<!DOCTYPE HTML>
+<?php
+  // Remember to copy files from the SDK's src/ directory to a
+  // directory in your application on the server, such as php-sdk/
+  require_once('php-sdk/facebook.php');
+
+  $config = array(
+    'appId' => 'YOUR_APP_ID',
+    'secret' => 'YOUR_APP_SECRET',
+    'allowSignedRequest' => false // optional but should be set to false for non-canvas apps
+  );
+
+  $facebook = new Facebook($config);
+  $user_id = $facebook->getUser();
+?>
 <html>
-  <head>
-  
-    <title>ROBO Phone INFO</title>
-    
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <meta name="format-detection" content="telephone=no" />
-        <meta name="viewport" content="user-scalable=yes, initial-scale=5, maximum-scale=10, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
-        
-    	
-    		<script type="text/javascript" src="phonegap-1.1.0.js"></script>
-    <script type="text/javascript">
-       /** Called when phonegap javascript is loaded */
-       function onDeviceReady(){
-         document.getElementById("deviceName").innerHTML
-                = device.name;
-         document.getElementById("version").innerHTML                   
-                = device.phonegap;
-         document.getElementById("mobilePlatform").innerHTML      
-                = device.platform;
-         document.getElementById("platformVersion").innerHTML     
-                = device.version;
-         document.getElementById("uuid").innerHTML                        
-                = device.uuid;
-       }
-       
-       /** Called when browser load this page*/
-       function init(){
-          document.addEventListener("deviceready", onDeviceReady, false);
-       }
-       
-    </script>
-  </head>
-  <body onLoad="init()">
-    <h1>Device Info</h1>
-    <table border="1">
-      <tr>  
-        <td>Device Name</td>
-        <td id="deviceName"></td>              
-      </tr>
-      <tr>  
-        <td>PhoneGap Version</td>
-        <td id="version"></td>                   
-      </tr>
-      <tr>  
-        <td>Mobile Platform</td>
-        <td id="mobilePlatform"></td>      
-      </tr>
-      <tr>  
-        <td>Platform Version</td>
-        <td id="platformVersion"></td>     
-      </tr>
-      <tr>  
-        <td>UUID</td>
-        <td id="uuid"></td>                        
-      </tr>
-    </table>
+  <head></head>
+  <body>
+
+  <?php
+    if($user_id) {
+
+      // We have a user ID, so probably a logged in user.
+      // If not, we'll get an exception, which we handle below.
+      try {
+
+        $user_profile = $facebook->api('/me','GET');
+        echo "Name: " . $user_profile['name'];
+
+      } catch(FacebookApiException $e) {
+        // If the user is logged out, you can have a 
+        // user ID even though the access token is invalid.
+        // In this case, we'll get an exception, so we'll
+        // just ask the user to login again here.
+        $login_url = $facebook->getLoginUrl(); 
+        echo 'Please <a href="' . $login_url . '">login.</a>';
+        error_log($e->getType());
+        error_log($e->getMessage());
+      }   
+    } else {
+
+      // No user, print a link for the user to login
+      $login_url = $facebook->getLoginUrl();
+      echo 'Please <a href="' . $login_url . '">login.</a>';
+
+    }
+
+  ?>
+
   </body>
 </html>
+
